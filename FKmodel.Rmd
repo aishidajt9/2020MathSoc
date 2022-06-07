@@ -1,0 +1,77 @@
+---
+title: "階層イメージ・階層帰属意識生成モデル"
+subtitle: "数理社会学ノート"
+author: "石田淳（関西学院大学社会学部）"
+date: "2022年6月2日"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## FKモデル
+
+階層イメージ・階層帰属意識生成を説明するFKモデル(Fararo & Kosaka 2003)を再現するプログラムである．
+
+関数の引数として客観階層を指定する．ここでは，ランクは3,2,1といった数字で表す．
+
+
+```{r}
+FK <- function(obj) {
+  obj <- obj[seq(ncol(obj),1)]
+  colnames(obj) <- NULL
+  obj <- as.matrix(obj)
+  
+  im <- replicate(nrow(obj),replicate(ncol(obj),replicate(nrow(obj)," ")))
+  
+  for (k in 1:nrow(obj)) {
+    for (j in 1:nrow(obj)) {
+      for (i in 1:ncol(obj)) {
+        if (obj[[k,i]] == obj[[j,i]]) {
+          im[[j,i,k]] <- obj[[k,i]]
+        } else {
+          im[[j,i,k]] <- obj[[j,i]]
+          break
+        }
+      }
+    }
+  }
+  
+  eqim <- data.frame(lapply(1:nrow(obj), 
+                            function(k) apply(im[,,k], 1, function(x) paste(x, collapse = ""))))
+  colnames(eqim) <- apply(obj, 1, function(x) paste(x, collapse = ""))
+  print(eqim)
+  
+  ci <- sapply(1:ncol(eqim),function(k) grep(colnames(eqim)[k],unique(eqim[,k])))
+  hist(ci, breaks=seq(0.5,max(ci)+0.5,1), col = "skyblue", main="")
+}
+```
+
+## 2x2階層システム
+
+```{r}
+obj22 <- expand.grid(c(2,1),c(2,1))
+FK(obj22)
+```
+
+## 2x3階層システム
+
+```{r}
+obj23 <- expand.grid(c(3,2,1),c(3,2,1))
+FK(obj23)
+```
+
+## 3x2階層システム
+
+```{r}
+obj32 <- expand.grid(c(2,1),c(2,1),c(2,1))
+FK(obj32)
+```
+
+## 3x3階層システム
+
+```{r}
+obj33 <- expand.grid(c(3,2,1),c(3,2,1),c(3,2,1))
+FK(obj33)
+```
